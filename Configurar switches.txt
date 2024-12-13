@@ -1,0 +1,43 @@
+--------- Congifurar un Switch --------------
+enable
+configure terminal
+hostname <Nombre para el switch>
+banner motd # <Mensaje del día, aparece al prender el switch> #
+line console 0
+logging synchronous
+password Clave_C
+login
+exit
+line vty 0 15
+logging synchronous
+password Clave_T
+login
+exit
+enable secret Clave_E
+
+Para descripción de interfaces:
+interface [gig, fa] x/y
+description <Descripción de la interfaz> Ej: "Conexión con computador PC9"
+switchport mode access				|
+switchport access vlan <id_VLAN>	|-> asignar el puerto del switch a una VLAN de forma estática
+exit
+
+Ver tabla de dispersión:
+sh mac address-table
+
+Configurar VLANs:
+vlan <id_VLAN> Ej: vlan 55
+name <nombre de la VLAN>
+end
+
+Para ver las VLANs en el switch:
+show vlan brief
+
+Para asignar un puerto como troncal, sobre la interfaz que conecta los switch:
+interface [gig, fa] x/y
+switchport mode trunk
+end
+
+Eliminar configuraciones:
+erase startup-config
+reload

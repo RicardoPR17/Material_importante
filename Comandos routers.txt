@@ -1,0 +1,87 @@
+Comandos para configuración de routers
+
+Nota: Debe ser ejecutado desde el computador conectado al puerto de consola del router.
+
+running-config --> Es el archivo en la RAM con la configuración que estemos realizando en el momento.
+startup-config --> Archivo de configuración persistente en el router. En caso de no existir al encenderse el router, este entra en modo setup
+
+Comando general: 
+	- no <comandos>, permite negar o revertir el comando que se coloque, para corregir una configuración o hacer el efecto opuesto del comando.
+	- exit --> Salir de la sección de configuración en donde nos encontramos, sea de interfaz, línea de comandos o general
+	- copy running-config startup-config --> Guarda la configuración que hemos hecho en el archivo de inicio del router, sino se perderá lo que hicimos. Enter para confirmar
+
+- Acceder al modo privilegiado (Obligarotio)
+enable
+configure terminal
+
+Nos debe aparecer al final de la router o el nombre del host un #
+
+- Información básica (Obligatoria siempre)
+hostname <nombre> --> Se usa para asignar el nombre al router
+banner motd # <texto> # --> Aquí ingresamos el mensaje que saldrá siempre que se quiera ingresar a la consola del router
+enable secret <contraseña> --> Asigna una contraseña para acceder al modo privilegiado
+no ip domain-lookup --> Evitar que el router consulte al DNS para las direcciones que ingresemos, confiando en lo escrito. Por esto, toca ser cuidadosos
+
+	- Seguridad de la línea de comandos
+	line console 0 --> Acceder a la configuración de la línea de comandos, sale (config-line)#
+	logging synchronous --> Si algo le sucede a la interfaz mientras la estamos configurando, nos notifica pero guarda la configuración/podemos seguir donde estamos
+	password <contraseña> --> Establece la contraseña para el uso de la consola
+	login
+	exit --> Estos últimos 2 para salir de la configuración y que esta se guarde
+	
+	- Seguridad de la línea de comandos desde terminal remota
+	line vty 0 15 --> Acceder a la configuración de la línea de comandos cuando se busque ingresar por terminal remota
+	Lo demás, es igual a la línea de comandos normal (Viñeta anterior)
+
+Configuración de interfaces (A continuación)
+exit y guardamos tras hacer esto.
+
+
+- Configurar una interfaz (FastEthernet, GigaEthernet, Serial, etc)
+interface <nombre> <x/y> --> Permite acceder a la configuración de la interfaz, el nombre es abreviado (Fa, Gig, Se) o completo y su número (0/0, 0/1, ...)
+description <"texto"> --> Descripción que se le desea dar a la interfaz, es opcional
+ip address <IP> <netmask> --> Asigna la IP de la red a la que responde esa pata del router, la máscara en versión decimal
+no shutdown --> Encender esa interfaz y que al encender el router esta interfaz quede activa
+
+- Eliminar la configuración
+erase startup-config
+reload
+
+- Configurar servicio DHCP
+service dhcp
+ip dhcp excluded-address <IP gateway>_
+ip dhcp pool <Nombre del pool> Nota: Se hace un pool por red a trabajar
+network <id_red> <máscara>
+default-router <IP_gateway>
+dns-server <IP del servidor DNS>
+exit
+
+- Ver la tabla de enrutamiento
+show ip route
+show ip protocols -> Muestra el protocolo de enrutamiento configurado en el router, las redes con máscara y los seriales
+
+- Configurar enrutamiento estático
+ip route <ID red> <netmask> <IP serial del otro router> --> Da la ruta para acceder a redes de otros routers, pide ID de la red, máscara y la IP de la interfaz donde está conectado el cable serial que une los routers
+
+- Configurar enrutamiento dinámico
+*RIP
+router rip
+version 2
+network <id_red> Nota: Esta línea se realiza por cada una de las redes en el router, sea conexión Fast, Giga o Serial
+no auto-summary --> Descativar supernetting
+exit
+
+*EIGRP
+router eigrp 1
+network <id_red> <wildcard> Nota: Esta línea se realiza por cada una de las redes en el router, sea conexión Fast, Giga o Serial
+no auto-summary
+exit
+
+show ip eigrp neighbors --> Ver los vecinos del router y datos
+
+*OSPF
+router ospf 1
+network <id_red> <wildcard> area 0 Nota: Esta línea se realiza por cada una de las redes en el router, sea conexión Fast, Giga o Serial
+exit
+
+show ip ospf neighbor --> Ver los vecinos del router y datos de estado, interfaz y dirección
